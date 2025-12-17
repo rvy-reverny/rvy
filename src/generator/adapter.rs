@@ -1,5 +1,5 @@
 use crate::context::Context;
-use crate::generator::{render, write_file};
+use crate::generator::{render, write_file, update_module_exports};
 
 pub fn generate(ctx: &Context, name: &str, db_type: &str) {
     let template = match db_type.to_lowercase().as_str() {
@@ -20,6 +20,7 @@ pub fn generate(ctx: &Context, name: &str, db_type: &str) {
     let path = format!("src/adapter/{}", filename);
 
     write_file(ctx, &path, &content);
+    update_module_exports(ctx, "src/adapter/mod.rs", &format!("{}_{}", name, db_type.to_lowercase()));
 }
 
 pub fn generate_all(ctx: &Context, name: &str) {
@@ -36,6 +37,9 @@ pub fn generate_config(ctx: &Context, name: &str) {
     let path = "src/config/database.rs";
     
     write_file(ctx, path, &content);
+    
+    // Update mod.rs to export database
+    update_module_exports(ctx, "src/config/mod.rs", "database");
 }
 
 pub fn generate_factory(ctx: &Context, name: &str) {
@@ -44,6 +48,10 @@ pub fn generate_factory(ctx: &Context, name: &str) {
     let path = format!("src/factory/{}_factory.rs", name);
     
     write_file(ctx, &path, &content);
+    
+    // Update mod.rs to export this factory
+    let module_name = format!("{}_factory", name);
+    update_module_exports(ctx, "src/factory/mod.rs", &module_name);
 }
 
 pub fn generate_usage_docs(ctx: &Context, name: &str) {

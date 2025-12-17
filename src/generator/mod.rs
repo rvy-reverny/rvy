@@ -18,15 +18,16 @@ pub fn render(template: &str, name: &str) -> String {
     let snake = to_snake_case(name);
 
     template
-        .replace("{{name}}", &snake)
-        .replace("{{Name}}", &pascal)
+        .replace("{{package_name}}", name)  // For Cargo.toml (allows hyphens)
+        .replace("{{name}}", &snake)        // For Rust code (underscores only)
+        .replace("{{Name}}", &pascal)       // PascalCase
 }
 
-fn to_snake_case(s: &str) -> String {
+pub fn to_snake_case(s: &str) -> String {
     s.replace('-', "_")
 }
 
-fn to_pascal_case(s: &str) -> String {
+pub fn to_pascal_case(s: &str) -> String {
     s.split(|c| c == '_' || c == '-')
         .map(|p| {
             let mut c = p.chars();
@@ -60,4 +61,29 @@ pub fn write_file(ctx: &Context, path: &str, content: &str) {
 
     fs::write(path, content).unwrap();
     println!("Created {}", path.display());
+}
+
+pub fn update_module_exports(ctx: &Context, mod_path: &str, module_name: &str) {
+    if ctx.dry_run {
+        return;
+    }
+    
+    let path = Path::new(mod_path);
+    let current_content = fs::read_to_string(path).unwrap_or_else(|_| String::new());
+    
+    let export_line = format!("pub mod {};", module_name);
+    if current_content.contains(&export_line) {
+        return;
+    }
+    
+    let new_content = if current_content.contains("// Add your modules here") {
+        current_content.replace(
+            "// Add your modules here",
+            &format!("pub mod {};\n// Add your modules here", module_name)
+        )
+    } else {
+        format!("{}\npub mod {};\n", current_content.trim(), module_name)
+    };
+    
+    fs::write(path, new_content).unwrap();
 }
