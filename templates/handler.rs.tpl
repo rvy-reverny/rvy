@@ -30,9 +30,31 @@ use crate::data::{{name}}_data::{{Name}}Data;
     components(schemas({{Name}}Data)),
     tags(
         (name = "{{name}}", description = "{{Name}} management endpoints")
-    )
+    ),
+    modifiers(&SecurityAddon)
 )]
 pub struct {{Name}}ApiDoc;
+
+/// Add Bearer token authentication to OpenAPI spec
+struct SecurityAddon;
+
+impl utoipa::Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        use utoipa::openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme};
+        
+        if let Some(components) = openapi.components.as_mut() {
+            components.add_security_scheme(
+                "bearer_auth",
+                SecurityScheme::Http(
+                    HttpBuilder::new()
+                        .scheme(HttpAuthScheme::Bearer)
+                        .bearer_format("JWT")
+                        .build()
+                ),
+            );
+        }
+    }
+}
 
 pub struct {{Name}}Handler {
     service: Arc<{{Name}}Service>,
@@ -59,6 +81,9 @@ impl {{Name}}Handler {
     path = "/{{name}}s",
     responses(
         (status = 200, description = "List all {{name}}s", body = [{{Name}}Data])
+    ),
+    security(
+        ("bearer_auth" = [])
     )
 )]
 async fn get_all_{{name}}s(
@@ -79,6 +104,9 @@ async fn get_all_{{name}}s(
     ),
     params(
         ("id" = i64, Path, description = "{{Name}} ID")
+    ),
+    security(
+        ("bearer_auth" = [])
     )
 )]
 async fn get_{{name}}_by_id(
@@ -98,6 +126,9 @@ async fn get_{{name}}_by_id(
     responses(
         (status = 201, description = "{{Name}} created successfully", body = {{Name}}Data),
         (status = 400, description = "Invalid input")
+    ),
+    security(
+        ("bearer_auth" = [])
     )
 )]
 async fn create_{{name}}(
@@ -121,6 +152,9 @@ async fn create_{{name}}(
     ),
     params(
         ("id" = i64, Path, description = "{{Name}} ID")
+    ),
+    security(
+        ("bearer_auth" = [])
     )
 )]
 async fn update_{{name}}(
@@ -143,6 +177,9 @@ async fn update_{{name}}(
     ),
     params(
         ("id" = i64, Path, description = "{{Name}} ID")
+    ),
+    security(
+        ("bearer_auth" = [])
     )
 )]
 async fn delete_{{name}}(
