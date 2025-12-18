@@ -39,10 +39,16 @@ fn update_main_router(ctx: &Context, name: &str) {
     // Add import after handler module declaration
     if !content.contains("use handler::") {
         // First handler - add imports section
-        new_content = new_content.replace(
-            "mod handler;",
-            &format!("mod handler;\n\nuse axum::Router;\nuse std::sync::Arc;\nuse tokio::net::TcpListener;\nuse handler::{}_handler::{}Handler;", snake, pascal)
-        );
+        let imports = if ctx.is_new_all {
+            // new-all: Add all necessary imports
+            format!("mod handler;\n\nuse axum::Router;\nuse std::sync::Arc;\nuse tokio::net::TcpListener;\n\nuse config::database::DatabaseConfig;\nuse factory::{}_factory;\nuse service::{}_service::{}Service;\nuse usecase::{}_usecase::{}Usecase;\nuse handler::{}_handler::{}Handler;", 
+                snake, snake, pascal, snake, pascal, snake, pascal)
+        } else {
+            // gen handler: Just handler import
+            format!("mod handler;\n\nuse axum::Router;\nuse std::sync::Arc;\nuse tokio::net::TcpListener;\nuse handler::{}_handler::{}Handler;", snake, pascal)
+        };
+        
+        new_content = new_content.replace("mod handler;", &imports);
     } else {
         // Add to existing imports
         let import_line = format!("use handler::{}_handler::{}Handler;", snake, pascal);
@@ -56,7 +62,37 @@ fn update_main_router(ctx: &Context, name: &str) {
     
     // Replace the main function with actual router setup
     if content.contains("println!(\"🚀 Welcome") {
-        let new_main = format!(r#"
+        let new_main = if ctx.is_new_all {
+            // new-all: Generate complete working code
+            format!(r#"
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {{
+    // Load environment variables from .env file
+    dotenvy::dotenv().ok();
+    
+    println!("🚀 Starting API Server...");
+    
+    // Initialize services
+    let config = config::database::DatabaseConfig::from_env();
+    let repository = factory::{}_factory::create_{}_repository(&config).await?;
+    let usecase = Arc::new(usecase::{}_usecase::{}Usecase::new(repository));
+    let service = Arc::new(service::{}_service::{}Service::new(usecase));
+    
+    let app = Router::new()
+        .merge({}Handler::routes(service));
+    
+    let addr = "127.0.0.1:3000";
+    println!("✅ Server listening on http://{{}}", addr);
+    
+    let listener = TcpListener::bind(addr).await?;
+    axum::serve(listener, app).await?;
+    
+    Ok(())
+}}
+"#, snake, snake, snake, pascal, snake, pascal, pascal)
+        } else {
+            // gen handler: Generate with TODO comments
+            format!(r#"
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {{
     println!("🚀 Starting API Server...");
@@ -79,7 +115,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {{
     
     Ok(())
 }}
-"#, snake, snake, snake, pascal, snake, pascal, pascal);
+"#, snake, snake, snake, pascal, snake, pascal, pascal)
+        };
         
         // Find and replace main function
         if let Some(start) = new_content.find("#[tokio::main]") {

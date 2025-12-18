@@ -117,9 +117,10 @@ enum GenCommands {
 fn main() {
     let cli = Cli::parse();
 
-    let ctx = Context {
+    let mut ctx = Context {
         dry_run: cli.dry_run,
         force: cli.force,
+        is_new_all: false,
     };
 
     match cli.command {
@@ -130,6 +131,7 @@ fn main() {
         },
 
         Commands::NewAll { name } => {
+            ctx.is_new_all = true;  // Set flag for new-all
             generate_all(&ctx, &name);
         }
 

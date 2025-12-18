@@ -10,6 +10,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
 
 # Database dependencies - uncomment the ones you need
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "mysql", "sqlite", "chrono"] }
