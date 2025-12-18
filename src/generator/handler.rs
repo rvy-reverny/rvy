@@ -225,14 +225,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {{
             
             if api_docs.len() > 1 {
                 // Build multiple URL calls for SwaggerUI
-                let urls: Vec<String> = api_docs.iter().enumerate().map(|(i, doc_var)| {
+                let urls: Vec<String> = api_docs.iter().enumerate().map(|(_i, doc_var)| {
                     let name = if doc_var == "openapi" {
                         // First one without suffix - need to extract from earlier in code
                         // Look for "ProductApiDoc::openapi()" pattern
                         if let Some(pos) = new_content.find(&format!("{} = ", doc_var)) {
                             if let Some(api_start) = new_content[pos..].find("ApiDoc::openapi()") {
                                 let before = &new_content[pos..pos + api_start];
-                                if let Some(name_start) = before.rfind(char::is_alphabetic) {
+                                if let Some(_name_start) = before.rfind(char::is_alphabetic) {
                                     let full_before = &new_content[..pos + api_start];
                                     if let Some(name_start_pos) = full_before.rfind(char::is_uppercase) {
                                         let entity_name = &new_content[name_start_pos..pos + api_start];
