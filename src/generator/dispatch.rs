@@ -1,5 +1,5 @@
 use crate::context::Context;
-use crate::generator::{service, usecase, repository, data, adapter, handler};
+use crate::generator::{service, usecase, repository, data, adapter, handler, test};
 
 pub enum GenKind {
     Service,
@@ -12,6 +12,9 @@ pub enum GenKind {
     Config,
     Factory,
     Example,
+    Test,           // Unit tests
+    IntegrationTest, // Integration tests
+    AllTests,       // Both unit and integration tests
 }
 
 pub fn dispatch(kind: GenKind, ctx: &Context, name: &str) {
@@ -26,6 +29,9 @@ pub fn dispatch(kind: GenKind, ctx: &Context, name: &str) {
         GenKind::Config => adapter::generate_config(ctx, name),
         GenKind::Factory => adapter::generate_factory(ctx, name),
         GenKind::Example => adapter::generate_usage_docs(ctx, name),
+        GenKind::Test => test::generate_unit_tests(ctx, name),
+        GenKind::IntegrationTest => test::generate_integration_tests(ctx, name),
+        GenKind::AllTests => test::generate_all_tests(ctx, name),
     }
 }
 
@@ -39,4 +45,5 @@ pub fn generate_all(ctx: &Context, name: &str) {
     dispatch(GenKind::Config, ctx, name);
     dispatch(GenKind::Factory, ctx, name);
     dispatch(GenKind::Example, ctx, name);
+    dispatch(GenKind::AllTests, ctx, name); // Add tests
 }

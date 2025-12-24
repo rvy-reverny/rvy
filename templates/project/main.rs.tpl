@@ -10,10 +10,10 @@ mod handler;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🚀 Welcome to {{Name}}!");
-    println!("\n� Generate your first entity with:");
-    println!("   rvy new-all <entity-name>");
+    println!("\n📝 Generate your first entity with:");
+    println!("   rvy gen-all <entity-name>");
     println!("\n📖 Example:");
-    println!("   rvy new-all user");
+    println!("   rvy gen-all user");
     println!("\n✨ This will generate:");
     println!("   • Service layer");
     println!("   • Usecase layer");

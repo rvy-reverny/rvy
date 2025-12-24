@@ -62,7 +62,7 @@ my_app/
 
 ```bash
 # Generate complete entity with all layers, database adapters, and REST API
-rvy new-all user
+rvy gen-all user
 ```
 
 This generates:
@@ -109,7 +109,7 @@ cd my_api
 ### 2. Generate your first entity
 
 ```bash
-rvy new-all product
+rvy gen-all product
 ```
 
 ### 3. Set up database connection
@@ -191,15 +191,15 @@ my_api/
 
 ```bash
 # Preview generation
-rvy new-all user --dry-run
+rvy gen-all user --dry-run
 
 # Force overwrite existing files
 rvy gen handler user --force
 
 # Generate multiple entities
-rvy new-all product
-rvy new-all user
-rvy new-all order
+rvy gen-all product
+rvy gen-all user
+rvy gen-all order
 ```
 
 ## 🏗️ Architecture

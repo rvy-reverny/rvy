@@ -30,9 +30,9 @@ enum Commands {
         command: NewCommands,
     },
 
-    /// Generate all layers (service, usecase, repository, data)
-    #[command(name = "new-all")]
-    NewAll {
+    /// Generate all layers (service, usecase, repository, data, handler, adapters)
+    #[command(name = "gen-all")]
+    GenAll {
         /// Name of the component
         name: String,
     },
@@ -118,6 +118,19 @@ enum GenCommands {
         /// Component name
         name: String,
     },
+
+    /// Generate unit tests for service layer
+    Test {
+        /// Component name
+        name: String,
+    },
+
+    /// Generate integration tests
+    #[command(name = "integration-test")]
+    IntegrationTest {
+        /// Component name
+        name: String,
+    },
 }
 
 fn main() {
@@ -136,8 +149,8 @@ fn main() {
             }
         },
 
-        Commands::NewAll { name } => {
-            ctx.is_new_all = true;  // Set flag for new-all
+        Commands::GenAll { name } => {
+            ctx.is_new_all = true;  // Set flag for gen-all
             generate_all(&ctx, &name);
         }
 
@@ -175,6 +188,10 @@ fn main() {
             GenCommands::Factory { name } => dispatch(GenKind::Factory, &ctx, &name),
 
             GenCommands::Example { name } => dispatch(GenKind::Example, &ctx, &name),
+
+            GenCommands::Test { name } => dispatch(GenKind::Test, &ctx, &name),
+
+            GenCommands::IntegrationTest { name } => dispatch(GenKind::IntegrationTest, &ctx, &name),
         },
     }
 }

@@ -40,7 +40,7 @@ fn update_main_router(ctx: &Context, name: &str) {
     if !content.contains("use handler::") {
         // First handler - add imports section
         let imports = if ctx.is_new_all {
-            // new-all: Add all necessary imports including Swagger UI
+            // gen-all: Add all necessary imports including Swagger UI
             format!("mod handler;\n\nuse axum::Router;\nuse std::sync::Arc;\nuse tokio::net::TcpListener;\nuse utoipa::OpenApi;\nuse utoipa_swagger_ui::SwaggerUi;\n\nuse config::database::DatabaseConfig;\nuse factory::{}_factory;\nuse service::{}_service::{}Service;\nuse usecase::{}_usecase::{}Usecase;\nuse handler::{}_handler::{{{}Handler, {}ApiDoc}};", 
                 snake, snake, pascal, snake, pascal, snake, pascal, pascal)
         } else {
@@ -102,7 +102,7 @@ fn update_main_router(ctx: &Context, name: &str) {
     if content.contains("println!(\"🚀 Welcome") {
         // First handler - generate complete main function
         let new_main = if ctx.is_new_all {
-            // new-all: Generate complete working code with Swagger UI
+            // gen-all: Generate complete working code with Swagger UI
             format!(r#"
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {{
