@@ -17,7 +17,6 @@ keywords = [
   "framework",
   "generator",
   "rust",
-  "scaffold",
   "codegen"
 ]
 
