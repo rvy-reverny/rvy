@@ -1,13 +1,13 @@
 [package]
 name = "rvy"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 description = "A modular Rust CLI framework for generating services, tools, and project scaffolds."
 license = "MIT"
 
-repository = "https://github.com/rvy-reverny/rvy"
-homepage = "https://github.com/rvy-reverny/rvy"
+repository = "https://github.com/reverny/rvy"
+homepage = "https://github.com/reverny/rvy"
 documentation = "https://docs.rs/rvy"
 
 readme = "README.md"
@@ -25,7 +25,7 @@ categories = [
   "development-tools"
 ]
 
-authors = ["rvy-reverny <contact@rvy.dev>"]
+authors = ["reverny"]
 
 [[bin]]
 name = "rvy"
