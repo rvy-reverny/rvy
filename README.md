@@ -15,6 +15,8 @@ A powerful CLI tool for scaffolding production-ready Rust projects with **Clean 
 - ⚡ **Async/Await** - Tokio-based async runtime
 - 🎯 **Type-Safe** - Full Rust type safety with SQLx compile-time checks
 - 📦 **Zero Configuration** - Works out of the box with sensible defaults
+- 🧪 **Testing** - Auto-generated unit and integration tests
+- 📝 **Migrations** - Database migration files for all supported databases
 
 ## Installation
 
@@ -76,6 +78,10 @@ This generates:
 - ✅ Factory pattern: `src/factory/user_factory.rs`
 - ✅ Database config: `src/config/database.rs`
 - ✅ Usage examples: `examples/user_example.rs` and `docs/user_USAGE.md`
+- ✅ Unit tests: `src/service/user_service.rs` (with mocks)
+- ✅ Integration tests: `tests/user_test.rs` (HTTP endpoint tests)
+- ✅ Database migrations: `migrations/*_create_users_table_{postgres,mysql,sqlite}.sql`
+- ✅ MongoDB setup: `migrations/setup_users_collection.rs`
 - ✅ Auto-updated `main.rs` with routes and Swagger UI
 
 ### Generate individual components
@@ -91,10 +97,17 @@ rvy gen data user
 rvy gen handler user
 
 # Generate database adapters
-rvy gen adapter user
+rvy gen adapter user --db-type postgres  # or mysql, sqlite, mongodb, all
 
 # Generate factory for runtime DB selection
 rvy gen factory user
+
+# Generate tests
+rvy gen test user              # Unit tests with mocks
+rvy gen integration-test user  # Integration tests
+
+# Generate database migrations
+rvy gen migration user --db-type postgres  # or mysql, sqlite, mongodb, all
 ```
 
 ## 🚀 Quick Start
@@ -176,6 +189,14 @@ my_api/
 │   └── config/
 │       ├── mod.rs
 │       └── database.rs      # DB configuration
+├── tests/
+│   ├── common.rs
+│   └── product_test.rs      # Integration tests
+├── migrations/              # Database migrations
+│   ├── 20240101_create_products_table_postgres.sql
+│   ├── 20240101_create_products_table_mysql.sql
+│   ├── 20240101_create_products_table_sqlite.sql
+│   └── setup_products_collection.rs  # MongoDB
 ├── examples/
 │   └── product_example.rs
 └── docs/
@@ -230,6 +251,159 @@ Database (PostgreSQL/MySQL/SQLite/MongoDB)
 - **Data**: DTOs with serialization and validation
 - **Factory**: Runtime database adapter selection
 - **Config**: Application configuration and environment variables
+
+## 🧪 Testing
+
+RVY generates comprehensive tests for your code:
+
+### Unit Tests
+
+Located in service files with mock repositories:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[tokio::test]
+    async fn test_get_by_id() {
+        let service = create_test_service();
+        let result = service.get_by_id(1).await;
+        assert!(result.is_ok());
+    }
+}
+```
+
+**Features:**
+- Mock repository implementations
+- Async test support with `tokio::test`
+- Tests for all CRUD operations
+- Error case handling
+
+### Integration Tests
+
+Located in `tests/` directory with HTTP endpoint testing:
+
+```rust
+#[tokio::test]
+async fn test_get_all_products() {
+    let app = create_test_service();
+    let response = app
+        .oneshot(Request::builder().uri("/products").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    
+    assert_eq!(response.status(), StatusCode::OK);
+}
+```
+
+**Features:**
+- Full HTTP endpoint testing
+- Tower service testing utilities
+- Request/response validation
+- Status code assertions
+
+### Run Tests
+
+```bash
+# Run all tests
+cargo test
+
+# Run specific test
+cargo test test_get_by_id
+
+# Run with output
+cargo test -- --nocapture
+```
+
+## 📝 Database Migrations
+
+RVY generates migration files for all supported databases:
+
+### PostgreSQL Migrations
+
+```sql
+-- migrations/20240101_create_products_table_postgres.sql
+CREATE TABLE IF NOT EXISTS products (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+
+-- Auto-update trigger
+CREATE OR REPLACE FUNCTION update_products_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+### MySQL Migrations
+
+```sql
+-- migrations/20240101_create_products_table_mysql.sql
+CREATE TABLE IF NOT EXISTS products (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_products_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+### SQLite Migrations
+
+```sql
+-- migrations/20240101_create_products_table_sqlite.sql
+CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+
+CREATE TRIGGER IF NOT EXISTS update_products_updated_at
+    AFTER UPDATE ON products FOR EACH ROW
+BEGIN
+    UPDATE products SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+```
+
+### MongoDB Setup
+
+```rust
+// migrations/setup_products_collection.rs
+pub async fn create_products_collection(db: &Database) -> Result<(), mongodb::error::Error> {
+    // Creates collection with validation schema and indexes
+    // ...
+}
+```
+
+### Running Migrations
+
+For SQL databases, use [sqlx-cli](https://github.com/launchbadge/sqlx/tree/main/sqlx-cli):
+
+```bash
+# Install sqlx-cli
+cargo install sqlx-cli
+
+# Run migrations
+sqlx migrate run
+
+# Or manually apply
+psql -U user -d dbname -f migrations/20240101_create_products_table_postgres.sql
+mysql -u user -p dbname < migrations/20240101_create_products_table_mysql.sql
+sqlite3 data.db < migrations/20240101_create_products_table_sqlite.sql
+```
+
+For MongoDB, include the setup script in your application initialization.
 
 ## 📚 API Documentation
 
