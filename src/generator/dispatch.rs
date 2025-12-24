@@ -1,5 +1,5 @@
 use crate::context::Context;
-use crate::generator::{service, usecase, repository, data, adapter, handler, test};
+use crate::generator::{service, usecase, repository, data, adapter, handler, test, migration};
 
 pub enum GenKind {
     Service,
@@ -15,6 +15,8 @@ pub enum GenKind {
     Test,           // Unit tests
     IntegrationTest, // Integration tests
     AllTests,       // Both unit and integration tests
+    Migration(String), // Migration for specific database
+    MigrationAll,   // Migrations for all databases
 }
 
 pub fn dispatch(kind: GenKind, ctx: &Context, name: &str) {
@@ -32,6 +34,18 @@ pub fn dispatch(kind: GenKind, ctx: &Context, name: &str) {
         GenKind::Test => test::generate_unit_tests(ctx, name),
         GenKind::IntegrationTest => test::generate_integration_tests(ctx, name),
         GenKind::AllTests => test::generate_all_tests(ctx, name),
+        GenKind::Migration(db_type) => {
+            if let Err(e) = migration::generate_migration(ctx, name, &db_type) {
+                eprintln!("❌ Error generating migration: {}", e);
+                std::process::exit(1);
+            }
+        }
+        GenKind::MigrationAll => {
+            if let Err(e) = migration::generate_migration(ctx, name, "all") {
+                eprintln!("❌ Error generating migrations: {}", e);
+                std::process::exit(1);
+            }
+        }
     }
 }
 
@@ -46,4 +60,5 @@ pub fn generate_all(ctx: &Context, name: &str) {
     dispatch(GenKind::Factory, ctx, name);
     dispatch(GenKind::Example, ctx, name);
     dispatch(GenKind::AllTests, ctx, name); // Add tests
+    dispatch(GenKind::MigrationAll, ctx, name); // Add migrations for all databases
 }

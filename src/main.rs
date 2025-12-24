@@ -131,6 +131,16 @@ enum GenCommands {
         /// Component name
         name: String,
     },
+
+    /// Generate database migration(s)
+    Migration {
+        /// Component name
+        name: String,
+
+        /// Database type: postgres, mysql, sqlite, mongodb, or 'all' for all types
+        #[arg(short, long, default_value = "all")]
+        db_type: String,
+    },
 }
 
 fn main() {
@@ -192,6 +202,14 @@ fn main() {
             GenCommands::Test { name } => dispatch(GenKind::Test, &ctx, &name),
 
             GenCommands::IntegrationTest { name } => dispatch(GenKind::IntegrationTest, &ctx, &name),
+
+            GenCommands::Migration { name, db_type } => {
+                if db_type.to_lowercase() == "all" {
+                    dispatch(GenKind::MigrationAll, &ctx, &name);
+                } else {
+                    dispatch(GenKind::Migration(db_type), &ctx, &name);
+                }
+            }
         },
     }
 }

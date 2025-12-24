@@ -12,6 +12,7 @@ pub mod handler;
 pub mod project;
 pub mod dispatch;
 pub mod test;
+pub mod migration;
 
 
 pub fn render(template: &str, name: &str) -> String {
