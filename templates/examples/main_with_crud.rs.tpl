@@ -1,24 +1,16 @@
 // Example main.rs with complete API setup
 // Copy this to your main.rs file to get a working API server
 
-mod service;
-mod usecase;
-mod repository;
-mod data;
-mod adapter;
-mod config;
-mod factory;
-mod handler;
-
+use CRATE_NAME::{
+    config::database::DatabaseConfig,
+    factory::{{name}}_factory::create_{{name}}_repository,
+    usecase::{{name}}_usecase::{{Name}}Usecase,
+    service::{{name}}_service::{{Name}}Service,
+    handler::{{name}}_handler::{{Name}}Handler,
+};
 use axum::Router;
 use std::sync::Arc;
 use tokio::net::TcpListener;
-
-use config::database::DatabaseConfig;
-use factory::{{name}}_factory::create_{{name}}_repository;
-use usecase::{{name}}_usecase::{{Name}}Usecase;
-use service::{{name}}_service::{{Name}}Service;
-use handler::{{name}}_handler::{{Name}}Handler;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

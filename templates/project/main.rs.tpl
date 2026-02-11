@@ -1,3 +1,4 @@
+mod error;
 mod service;
 mod usecase;
 mod repository;

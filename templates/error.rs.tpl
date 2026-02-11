@@ -76,7 +76,6 @@ impl IntoResponse for AppError {
 }
 
 /// Convert SQLx errors to AppError
-#[cfg(feature = "sqlx")]
 impl From<sqlx::Error> for AppError {
     fn from(err: sqlx::Error) -> Self {
         match err {
@@ -88,7 +87,6 @@ impl From<sqlx::Error> for AppError {
 }
 
 /// Convert MongoDB errors to AppError
-#[cfg(feature = "mongodb")]
 impl From<mongodb::error::Error> for AppError {
     fn from(err: mongodb::error::Error) -> Self {
         AppError::Database(err.to_string())

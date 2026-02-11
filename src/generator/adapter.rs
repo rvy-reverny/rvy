@@ -57,7 +57,14 @@ pub fn generate_factory(ctx: &Context, name: &str) {
 pub fn generate_usage_docs(ctx: &Context, name: &str) {
     // Generate example main
     let main_template = include_str!("../../templates/examples/main_with_crud.rs.tpl");
-    let main_content = render(main_template, name);
+    let mut main_content = render(main_template, name);
+    
+    // Replace crate name with actual package name from Cargo.toml
+    if let Some(package_name) = get_package_name() {
+        let crate_name = package_name.replace('-', "_");
+        main_content = main_content.replace("CRATE_NAME", &crate_name);
+    }
+    
     let main_path = format!("examples/{}_example.rs", name);
     write_file(ctx, &main_path, &main_content);
 
@@ -66,4 +73,23 @@ pub fn generate_usage_docs(ctx: &Context, name: &str) {
     let doc_content = render(doc_template, name);
     let doc_path = format!("docs/{}_USAGE.md", name);
     write_file(ctx, &doc_path, &doc_content);
+}
+
+fn get_package_name() -> Option<String> {
+    use std::path::Path;
+    let cargo_path = "Cargo.toml";
+    if !Path::new(cargo_path).exists() {
+        return None;
+    }
+    
+    let content = std::fs::read_to_string(cargo_path).ok()?;
+    for line in content.lines() {
+        if line.trim().starts_with("name") {
+            if let Some(name) = line.split('=').nth(1) {
+                let name = name.trim().trim_matches('"').trim();
+                return Some(name.to_string());
+            }
+        }
+    }
+    None
 }

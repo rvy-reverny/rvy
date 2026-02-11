@@ -19,6 +19,7 @@ utoipa-swagger-ui = { version = "8", features = ["axum"] }
 # Database dependencies - uncomment the ones you need
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "mysql", "sqlite", "chrono"] }
 mongodb = "3.1"
+futures = "0.3"
 
 [dev-dependencies]
 # Testing dependencies

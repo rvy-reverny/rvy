@@ -78,11 +78,36 @@ fn create_test_common(_ctx: &Context, name: &str) {
         return; // Already exists
     }
     
+    // Read package name from Cargo.toml
+    let package_name = get_package_name().unwrap_or_else(|| name.to_string());
+    
     let template = include_str!("../../templates/tests/common.rs.tpl");
-    let content = render(template, name);
+    let mut content = render(template, name);
+    
+    // Replace placeholders with actual crate name (snake_case version)
+    let crate_name = package_name.replace('-', "_");
+    content = content.replace("crate::", &format!("{}::", crate_name));
     
     fs::write(common_path, content).unwrap();
     println!("Created {}", common_path);
+}
+
+fn get_package_name() -> Option<String> {
+    let cargo_path = "Cargo.toml";
+    if !Path::new(cargo_path).exists() {
+        return None;
+    }
+    
+    let content = fs::read_to_string(cargo_path).ok()?;
+    for line in content.lines() {
+        if line.trim().starts_with("name") {
+            if let Some(name) = line.split('=').nth(1) {
+                let name = name.trim().trim_matches('"').trim();
+                return Some(name.to_string());
+            }
+        }
+    }
+    None
 }
 
 pub fn generate_all_tests(ctx: &Context, name: &str) {
